@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image Filter</title>
+</head>
+<body>
+  <style type="text/css">
+    body {
+  background-color: lightgrey;
+}
+.clearfix {
+  clear:both;
+}
+#page_wrapper {
+  padding: 10px;
+  width: 90%;
+  max-width: 960px;
+  margin: 0 auto;
+  background-color: white;
+  min-height: 550px;
+  box-shadow: 0 0 10px rgba(0,0,0,.5);
+}
+
+#page_wrapper div {
+  float: left;
+}
+
+h2 {
+  font-family: Helvetica, Arial, sans-serif;
+  text-align: center;
+  border-bottom: 1px solid grey;
+  padding-bottom: 25px;
+}
+
+#canvas_container {
+  width: 80%;
+  padding-right: 10px;
+}
+canvas {
+  width: 100%;
+  border: 1px solid darkgrey;
+  margin: 
+}
+
+#filter_btn_container {
+  width: 15%;
+  height: 300px;
+}
+
+.btn {
+  display: block;
+/*   width: 100%; */
+  text-align: center;
+  padding: 10px;
+  border: 1px solid grey;
+  margin-bottom: 10px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-family: Geneva;
+  font-weight: bold;
+}
+.btn.reset {
+  background-color: #FF654D;
+  color: white;
+  border: 1px solid #E05944;
+}
+.btn.reset:hover {
+  background-color: #E05944;
+}
+#file {
+  position: absolute;
+  left: -200px;
+}
+
+.btn:hover {
+  background-color: #eeeeee;
+  cursor: pointer;
+}
+  </style>
+<script type="text/javascript">
+  var image = null;
+var copyImage = null;
+var can = document.getElementById('can')
+function clickMe(){
+  var fileInput = document.getElementById("file");
+    fileInput.click();
+}
+
+function loadImage(){
+  image = new SimpleImage(document.getElementById('file'));
+  copyImage = new SimpleImage(document.getElementById('file'));
+  image.drawTo(can);
+}
+
+function grey(){
+  copyImage = new SimpleImage(image);
+  if(isReady(copyImage)){
+    for(var pixel of copyImage.values()){
+      var avg = (pixel.getRed()+pixel.getBlue()+pixel.getGreen())/3;
+      pixel.setRed(avg);
+      pixel.setGreen(avg);
+      pixel.setBlue(avg);
+    }
+    copyImage.drawTo(can);
+  } else {
+    alert("Image is not ready");
+  }
+  
+}
+
+function red(){
+  if(isReady(copyImage)){
+    for(var pixel of copyImage.values()){
+     
+      var avg = (pixel.getRed()+pixel.getBlue()+pixel.getGreen())/3;
+      
+      if(avg < 128) {
+        pixel.setRed(avg*2);
+        pixel.setGreen(0);
+        pixel.setBlue(0);
+      } else {
+        pixel.setRed(255);
+        pixel.setGreen((avg*2)-255);
+        pixel.setBlue((avg*2)-255);
+      }
+      
+    }
+    copyImage.drawTo(can);
+  } else {
+    alert("Image is not ready");
+  }
+}
+
+function pane(){
+   if(isReady(copyImage)){
+     var imageWidth = image.getWidth();
+     var imageHeight = image.getHeight();
+    
+     for(var pixel of copyImage.values()){
+       var X = pixel.getX();
+       var Y = pixel.getY();
+      if((X < imageWidth && Y < 20 || Y > imageHeight-20) || (X < 20 || X > imageWidth-20 )) {
+        pixel.setRed(0);
+        pixel.setGreen(255);
+        pixel.setBlue(0);
+      }
+       
+       var xPane = ((imageWidth-40)/5);
+       var yPane = (imageHeight-40)/2;
+       
+       if(X > xPane+20 &&     X < xPane+20+20     && Y > 20 && Y <= imageHeight-20 ||
+          X > (xPane*2)+20 && X < (xPane*2)+20+20 && Y > 20 && Y <= imageHeight-20 ||
+          X > (xPane*3)+20 && X < (xPane*3)+20+20 && Y > 20 && Y <= imageHeight-20 ||
+          X > (xPane*4)+20 && X < (xPane*4)+20+20 && Y > 20 && Y <= imageHeight-20
+       ){
+         pixel.setRed(255);
+         pixel.setGreen(255);
+         pixel.setBlue(255);
+       }
+       
+       if(X>20 && X < imageWidth-20 && Y > yPane && Y < yPane+20){
+          pixel.setRed(255);
+         pixel.setGreen(255);
+         pixel.setBlue(255);
+          }
+      
+    }
+    copyImage.drawTo(can);
+  } else {
+    alert("Image is not ready");
+  }
+}
+
+// function rainbow(){
+  
+// }
+
+function flip(){
+  if(isReady(copyImage)){
+     var imageWidth = image.getWidth();
+     var imageHeight = image.getHeight();
+    
+     for(var pixel of copyImage.values()){
+       var X = pixel.getX();
+       var Y = pixel.getY();
+       var newPixel = image.getPixel(imageWidth-X-1,imageHeight-Y-1);
+       pixel.setAllFrom(newPixel);
+      
+     }
+     copyImage.drawTo(can);
+  } else {
+     alert("Image is not ready");
+  }
+}
+
+function rainbow(){
+  
+  if(isReady(copyImage)){
+     var imageWidth = image.getWidth();
+     var imageHeight = image.getHeight();
+    
+     for(var pixel of copyImage.values()){
+       var X = pixel.getX();
+       var Y = pixel.getY();
+       var avg = (pixel.getRed() + pixel.getGreen()+pixel.getBlue())/3;
+       
+       if(Y < imageHeight/7){
+           //make red 
+           if(avg < 128){
+             pixel.setRed(2*avg);
+             pixel.setGreen(0);
+             pixel.setBlue(0);
+           } else {
+             pixel.setRed(255);
+             pixel.setGreen(2*avg-255);
+             pixel.setBlue(2*avg-255);
+           }
+       } else if(Y > imageHeight/7 && Y < imageHeight/7*2){
+           //make orange
+         if(avg < 128){
+             pixel.setRed(2*avg);
+             pixel.setGreen(0.8*avg);
+             pixel.setBlue(0);
+           } else {
+             pixel.setRed(255);
+             pixel.setGreen(1.2*avg-51);
+             pixel.setBlue(2*avg-255);
+           }
+       } else if(Y > imageHeight/7*2 && Y < imageHeight/7*3){
+           //make yellow
+         if(avg < 128){
+             pixel.setRed(2*avg);
+             pixel.setGreen(2*avg);
+             pixel.setBlue(0);
+           } else {
+             pixel.setRed(255);
+             pixel.setGreen(255);
+             pixel.setBlue(2*avg-255);
+           }
+       } else if(Y > imageHeight/7*3 && Y < imageHeight/7*4){
+           //make green
+         if(avg < 128){
+             pixel.setRed(0);
+             pixel.setGreen(2*avg);
+             pixel.setBlue(0);
+           } else {
+             pixel.setRed(255*avg-255);
+             pixel.setGreen(255);
+             pixel.setBlue(2*avg-255);
+           }
+       } else if(Y > imageHeight/7*4 && Y < imageHeight/7*5){
+          //make blue
+         if(avg < 128){
+             pixel.setRed(0);
+             pixel.setGreen(0);
+             pixel.setBlue(2*avg);
+           } else {
+             pixel.setRed(2*avg-255);
+             pixel.setGreen(2*avg-255);
+             pixel.setBlue(255);
+           }
+       } else if(Y > imageHeight/7*5 && Y < imageHeight/7*6){
+          //make indigo
+         if(avg < 128){
+             pixel.setRed(0.8*avg);
+             pixel.setGreen(0);
+             pixel.setBlue(2*avg);
+           } else {
+             pixel.setRed(1.2*avg-51);
+             pixel.setGreen(2*avg-255);
+             pixel.setBlue(255);
+           }
+       } else {
+          //make violet
+         if(avg < 128){
+             pixel.setRed(1.6*avg);
+             pixel.setGreen(0);
+             pixel.setBlue(1.6*avg);
+           } else {
+             pixel.setRed(0.4*avg-153);
+             pixel.setGreen(2*avg-255);
+             pixel.setBlue(0.4*avg+153);
+           }
+       }
+
+     }
+     copyImage.drawTo(can);
+  } else {
+     alert("Image is not ready");
+  }
+}
+
+function flur(){
+  if(isReady(copyImage)){
+     var imageWidth = image.getWidth();
+     var imageHeight = image.getHeight();
+     //alert(Math.floor(Math.random()*10));
+    
+     for(var pixel of copyImage.values()){
+       
+       var X = pixel.getX();
+       var Y = pixel.getY();
+       
+       if(Math.random() < 0.5){
+          var newPixel = image.getPixel(X,Y);
+          pixel.setAllFrom(newPixel);
+       } else {
+          var randomN = getRandomN();
+         var newX = X+randomN;
+         var newY = Y+randomN;
+         
+         if(newX>=imageWidth){
+           newX = X-randomN;
+         }
+         if(newY>=imageHeight){
+           newY = Y-randomN;
+         }
+         var newPixel2 = image.getPixel(newX,newY);
+         pixel.setAllFrom(newPixel2);
+        
+       }
+      
+     }
+     
+     copyImage.drawTo(can);
+  } else {
+     alert("Image is not ready");
+  }
+}
+
+function getRandomN(){
+  return Math.floor(Math.random()*10);
+}
+
+function resetMe(){
+  if(isReady(image)){
+    var ctx = can.getContext('2d');
+    ctx.clearRect(0,0,can.width, can.height);
+    image.drawTo(can);
+    copyImage = new SimpleImage(image);
+  } else {
+    alert("Image is not ready!");
+  }
+  
+}
+
+function isReady(image){
+  if(image == null || !image.complete()){
+    return false;
+  }
+  return true;
+}
+  
+
+</script>
+
+  <script src='https://www.dukelearntoprogram.com/course1/common/js/image/SimpleImage.js'>
+    
+
+  </script>
+
+<div id='page_wrapper' class='clearfix'>
+  <h2>Try my mini PhotoShop</h2>
+  
+  <div id='canvas_container' class='clearfix'>
+    <canvas id='can'>
+      
+    </canvas>
+    
+    <input id='file' type='file' accept='image/*' multiple='false' onchange='loadImage()'>
+    <span onclick='clickMe()' class='btn' id='upload_btn'>Upload image</span>
+  </div>
+  
+  <div id='filter_btn_container'>
+    <span class='btn' id='grey' onclick='grey()'>Grey</span>
+    <span class='btn' id='red' onclick='red()'>Red</span>
+    <span class='btn' id='pane' onclick='pane()'>Pane</span>
+<!--     <span class='btn'  id='rainbow' onclick='rainbow()'>Rainbow</span> -->
+    <span class='btn' id='flip' onclick='flip()'>Flip</span>
+    
+    <span class='btn' id='rainbow' onclick='rainbow()'>Rainbow</span>
+    
+    <span class='btn' id='flur' onclick='flur()'>Blur</span>
+    
+    <span class='btn reset' id='reset' onclick='resetMe()'>Reset</span>
+  </div>
+ 
+  
+
+</div>
+
+</body>
+</html>
